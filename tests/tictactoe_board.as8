@@ -1,0 +1,424 @@
+	jmp	:main
+; tic spots
+empty_spot:
+data {
+	0b00000000
+	0b00000000
+	0b00000000
+	0b00000000
+	0b00000000
+	0b00000000
+	0b00000000
+
+	0b00000000		; padding
+}
+X_spot:
+data {
+	0b10000010
+	0b01000100
+	0b00101000
+	0b00010000
+	0b00101000
+	0b01000100
+	0b10000010
+
+	0b00000000		; padding
+}
+O_spot:
+data {
+	0b00111000
+	0b01000100
+	0b10000010
+	0b10000010
+	0b10000010
+	0b01000100
+	0b00111000
+
+	0b00000000		; padding
+}
+
+; ##############################################################
+; ##                  ##                  ##                  ##
+; ##                  ##                  ##                  ##
+; ##                  ##                  ##                  ##
+; ##                  ##                  ##                  ##
+; ##                  ##                  ##                  ##
+; ##                  ##                  ##                  ##
+; ##                  ##                  ##                  ##
+; ##                  ##                  ##                  ##
+; ##                  ##                  ##                  ##
+; ##############################################################
+; ##                  ##                  ##                  ##
+; ##                  ##                  ##                  ##
+; ##                  ##                  ##                  ##
+; ##                  ##                  ##                  ##
+; ##                  ##                  ##                  ##
+; ##                  ##                  ##                  ##
+; ##                  ##                  ##                  ##
+; ##                  ##                  ##                  ##
+; ##                  ##                  ##                  ##
+; ##############################################################
+; ##                  ##                  ##                  ##
+; ##                  ##                  ##                  ##
+; ##                  ##                  ##                  ##
+; ##                  ##                  ##                  ##
+; ##                  ##                  ##                  ##
+; ##                  ##                  ##                  ##
+; ##                  ##                  ##                  ##
+; ##                  ##                  ##                  ##
+; ##                  ##                  ##                  ##
+; ##############################################################
+
+tic_top_0:
+data {
+	0b11111111
+	0b10000000
+	0b10000000
+	0b10000000
+	0b10000000
+	0b10000000
+	0b10000000
+	0b10000000
+	0b10000000
+	0b10000000
+	0b11111111
+	0b10000000
+	0b10000000
+	0b10000000
+	0b10000000
+}
+tic_middle_0:
+data {
+	0b10000000
+	0b10000000
+	0b10000000
+	0b10000000
+	0b10000000
+	0b11111111
+	0b10000000
+	0b10000000
+	0b10000000
+	0b10000000
+	0b10000000
+	0b10000000
+	0b10000000
+	0b10000000
+	0b10000000
+}
+tic_bottom_0:
+data {
+	0b11111111
+}
+tic_top_1:
+data {
+	0b11111111
+	0b00100000
+	0b00100000
+	0b00100000
+	0b00100000
+	0b00100000
+	0b00100000
+	0b00100000
+	0b00100000
+	0b00100000
+	0b11111111
+	0b00100000
+	0b00100000
+	0b00100000
+	0b00100000
+}
+tic_middle_1:
+data {
+	0b00100000
+	0b00100000
+	0b00100000
+	0b00100000
+	0b00100000
+	0b11111111
+	0b00100000
+	0b00100000
+	0b00100000
+	0b00100000
+	0b00100000
+	0b00100000
+	0b00100000
+	0b00100000
+	0b00100000
+}
+tic_bottom_1:
+data {
+	0b11111111
+}
+tic_top_2:
+data {
+	0b11111111
+	0b00001000
+	0b00001000
+	0b00001000
+	0b00001000
+	0b00001000
+	0b00001000
+	0b00001000
+	0b00001000
+	0b00001000
+	0b11111111
+	0b00001000
+	0b00001000
+	0b00001000
+	0b00001000
+}
+tic_middle_2:
+data {
+	0b00001000
+	0b00001000
+	0b00001000
+	0b00001000
+	0b00001000
+	0b11111111
+	0b00001000
+	0b00001000
+	0b00001000
+	0b00001000
+	0b00001000
+	0b00001000
+	0b00001000
+	0b00001000
+	0b00001000
+}
+tic_bottom_2:
+data {
+	0b11111111
+}
+tic_top_3:
+data {
+	0b11111110
+	0b00000010
+	0b00000010
+	0b00000010
+	0b00000010
+	0b00000010
+	0b00000010
+	0b00000010
+	0b00000010
+	0b00000010
+	0b11111110
+	0b00000010
+	0b00000010
+	0b00000010
+	0b00000010
+}
+tic_middle_3:
+data {
+	0b00000010
+	0b00000010
+	0b00000010
+	0b00000010
+	0b00000010
+	0b11111110
+	0b00000010
+	0b00000010
+	0b00000010
+	0b00000010
+	0b00000010
+	0b00000010
+	0b00000010
+	0b00000010
+	0b00000010
+}
+tic_bottom_3:
+data {
+	0b11111110
+}
+
+
+draw_board_pieces: ; board should be loaded in 9 bytes at I, v0-a will be used
+	cls
+
+	ldr	v8
+
+	mov	v9, #2
+	mov	va, #2
+
+	mvi	:empty_spot
+	shlr	v0
+	shlr	v0
+	shlr	v0
+	addi	v0
+	draw	v9, va, #7
+
+	add	v9, #10
+	mvi	:empty_spot
+	shlr	v1
+	shlr	v1
+	shlr	v1
+	addi	v1
+	draw	v9, va, #7
+
+	add	v9, #10
+	mvi	:empty_spot
+	shlr	v2
+	shlr	v2
+	shlr	v2
+	addi	v2
+	draw	v9, va, #7
+
+	mov	v9, #2
+	add	va, #10
+	mvi	:empty_spot
+	shlr	v3
+	shlr	v3
+	shlr	v3
+	addi	v3
+	draw	v9, va, #7
+
+	add	v9, #10
+	mvi	:empty_spot
+	shlr	v4
+	shlr	v4
+	shlr	v4
+	addi	v4
+	draw	v9, va, #7
+
+	add	v9, #10
+	mvi	:empty_spot
+	shlr	v5
+	shlr	v5
+	shlr	v5
+	addi	v5
+	draw	v9, va, #7
+
+	mov	v9, #2
+	add	va, #10
+	mvi	:empty_spot
+	shlr	v6
+	shlr	v6
+	shlr	v6
+	addi	v6
+	draw	v9, va, #7
+
+	add	v9, #10
+	mvi	:empty_spot
+	shlr	v7
+	shlr	v7
+	shlr	v7
+	addi	v7
+	draw	v9, va, #7
+
+	add	v9, #10
+	mvi	:empty_spot
+	shlr	v8
+	shlr	v8
+	shlr	v8
+	addi	v8
+	draw	v9, va, #7
+
+	jsl	:draw_board_border
+
+	ret
+
+draw_board_border: ; uses registers v0,v1
+	mov	v0, #0
+	mov	v1, #0
+
+	mvi	:tic_top_0
+	draw	v0, v1, #15
+
+	mvi	:tic_middle_0
+	add	v1, #15
+	draw	v0, v1, #15
+	
+	mvi	:tic_bottom_0
+	add	v1, #15
+	draw	v0, v1, #1
+
+
+	mvi	:tic_top_1
+	add	v0, #8
+	mov	v1, #0
+	draw	v0, v1, #15
+
+	mvi	:tic_middle_1
+	add	v1, #15
+	draw	v0, v1, #15
+
+	mvi	:tic_bottom_1
+	add	v1, #15
+	draw	v0, v1, #1
+
+
+	mvi	:tic_top_2
+	add	v0, #8
+	mov	v1, #0
+	draw	v0, v1, #15
+
+	mvi	:tic_middle_2
+	add	v1, #15
+	draw	v0, v1, #15
+
+	mvi	:tic_bottom_2
+	add	v1, #15
+	draw	v0, v1, #1
+
+
+	mvi	:tic_top_3
+	add	v0, #8
+	mov	v1, #0
+	draw	v0, v1, #15
+
+	mvi	:tic_middle_3
+	add	v1, #15
+	draw	v0, v1, #15
+
+	mvi	:tic_bottom_3
+	add	v1, #15
+	draw	v0, v1, #1
+
+
+	ret
+
+block_read_move_key: ; uses v0,ve,vd,vf. only allows 0-9 (inclusive)
+	mov	vd, #10 ; const
+gdd_loop_start:
+	key	ve
+	movr	v0, ve
+
+	skne	v0, #0xf
+	jmp	:gdd_loop_end
+
+	subr	ve, vd
+	skeq	vf, #1
+	jmp	:gdd_loop_end
+	jmp	:gdd_loop_start
+gdd_loop_end:
+	ret
+
+; board stored starting at $ff7 (4087-4095)
+main:
+	jsl	:draw_board_border
+	mov	vc, #0b01
+loop_start:
+	mvi	$ff7
+	jsl	:block_read_move_key
+	skne	v0, #0xf
+	jmp	:loop_end
+
+	add	v0, #0xff ; subtract 1
+	addi	v0
+
+	ldr	v0
+	skeq	v0, #0
+	jmp	:loop_start
+
+	movr	v0, vc
+	mov	v1, #0b11
+	xorr	vc, v1
+	str	v0
+
+	mvi	$ff7
+	jsl	:draw_board_pieces
+
+	jmp	:loop_start
+loop_end:
+	exit
+infinite_loop:
+	jmp	:infinite_loop

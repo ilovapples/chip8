@@ -1,0 +1,1 @@
+- assembly compiler should write u16 instructions with big-endian ( outw.writeInt(u16, @bitCast(instr), .big) )

@@ -1,0 +1,61 @@
+	jmp	:main
+
+; print_decimal:
+; 	bcd	v0
+; 	movr	v3, v1
+; 	movr	v4, v2
+; 	ldr	v2
+;
+; 	font	v0
+; 	draw	v3, v4, #5
+;
+; 	font	v1
+; 	add	v3, #4
+; 	draw	v3, v4, #5
+;
+; 	font	v2
+; 	add	v3, #4
+; 	draw	v3, v4, #5
+;
+; 	ret
+
+get_decimal_digit:
+	mov	vd, #10
+gdd_loop_start:
+	key	ve
+	movr	v0, ve
+	subr	ve, vd
+	skeq	vf, #1
+	jmp	:gdd_loop_end
+	jmp	:gdd_loop_start
+gdd_loop_end:
+	ret
+
+read_print_decimal:
+	movr	v2, v1
+	movr	v1, v0
+
+	jsl	:get_decimal_digit
+	font	v0
+	draw	v1, v2, #5
+
+	jsl	:get_decimal_digit
+	font	v0
+	add	v1, #4
+	draw	v1, v2, #5
+
+	jsl	:get_decimal_digit
+	font	v0
+	add	v1, #4
+	draw	v1, v2, #5
+
+	ret
+
+main:
+	cls
+	mvi	$1fd	; 3 bytes before program data
+	mov	v0, #0
+	mov	v1, #0
+	jsl	:read_print_decimal
+
+	ret

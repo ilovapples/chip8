@@ -1,0 +1,1 @@
+zig build-exe write_little.zig && zig build-exe write_big.zig

@@ -1,0 +1,13 @@
+	mov	v0, #10
+loop_start:
+	skne	v0, #0
+	jmp	:loop_end
+
+	dbgrix	v0
+	add	v0, #0xff ; subtract 1
+loop_end:
+	mov	v0, #0xf
+infinite_loop:
+	skup	v0
+	exit
+	jmp	:infinite_loop

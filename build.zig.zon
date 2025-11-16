@@ -1,0 +1,13 @@
+.{
+    .name = .chip8,
+    .version = "0.0.1",
+    .dependencies = .{
+        .mibu = .{
+            .url = "git+https://github.com/xyaman/mibu#9c477eb28415cf46e1c52f6b1143d4d0da8d5d36",
+            .hash = "mibu-0.0.1-dev-Ddr1riTEAABkaoLGavBv8fCjq85hbYy4HXd6hSgxvCwf",
+        },
+    },
+    .minimum_zig_version = "0.15.1",
+    .paths = .{""},
+    .fingerprint = 0xa61914ab1d0d0f50,
+}
