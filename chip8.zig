@@ -34,13 +34,13 @@ pub const Chip8Emu = struct {
     /// can be `@bitCast`ed into `[4096]u8`
     pub const Ram = struct {
         /// `ram[0x000..0x050]`
-        unused0:        [0x050]u8,
+        unused0: [0x050]u8,
         /// `ram[0x050..0x0a0]`
-        font_block:     [0x050]u8 = @bitCast(chars_font),
+        font_block: [0x050]u8 = @bitCast(chars_font),
         /// `ram[0x0a0..0x200]`
-        unused1:        [0x160]u8,
+        unused1: [0x160]u8,
         /// `ram[0x200..]`
-        program_data:   [0xe00]u8,
+        program_data: [0xe00]u8,
 
         /// stored in `ram[0x050..0x0a0]`
         /// each char is 4x5 pixels, stored as 5*8 bits or [5]u8
@@ -48,37 +48,133 @@ pub const Chip8Emu = struct {
         pub const CharFont = [5]u8;
         pub const chars_font = [16]CharFont{
             // '0'
-            .{ 0b0100_0000, 0b1010_0000, 0b1010_0000, 0b1010_0000, 0b0100_0000, },
+            .{
+                0b0100_0000,
+                0b1010_0000,
+                0b1010_0000,
+                0b1010_0000,
+                0b0100_0000,
+            },
             // '1'
-            .{ 0b0100_0000, 0b1100_0000, 0b0100_0000, 0b0100_0000, 0b1110_0000, },
+            .{
+                0b0100_0000,
+                0b1100_0000,
+                0b0100_0000,
+                0b0100_0000,
+                0b1110_0000,
+            },
             // '2'
-            .{ 0b1100_0000, 0b0010_0000, 0b0100_0000, 0b1000_0000, 0b1110_0000, },
+            .{
+                0b1100_0000,
+                0b0010_0000,
+                0b0100_0000,
+                0b1000_0000,
+                0b1110_0000,
+            },
             // '3'
-            .{ 0b1100_0000, 0b0010_0000, 0b0100_0000, 0b0010_0000, 0b1100_0000, },
+            .{
+                0b1100_0000,
+                0b0010_0000,
+                0b0100_0000,
+                0b0010_0000,
+                0b1100_0000,
+            },
             // '4'
-            .{ 0b0010_0000, 0b0110_0000, 0b1010_0000, 0b1110_0000, 0b0010_0000, },
+            .{
+                0b0010_0000,
+                0b0110_0000,
+                0b1010_0000,
+                0b1110_0000,
+                0b0010_0000,
+            },
             // '5'
-            .{ 0b1110_0000, 0b1000_0000, 0b1110_0000, 0b0010_0000, 0b1110_0000, },
+            .{
+                0b1110_0000,
+                0b1000_0000,
+                0b1110_0000,
+                0b0010_0000,
+                0b1110_0000,
+            },
             // '6'
-            .{ 0b1110_0000, 0b1000_0000, 0b1110_0000, 0b1010_0000, 0b1110_0000, },
+            .{
+                0b1110_0000,
+                0b1000_0000,
+                0b1110_0000,
+                0b1010_0000,
+                0b1110_0000,
+            },
             // '7'
-            .{ 0b1110_0000, 0b0010_0000, 0b0100_0000, 0b0100_0000, 0b0100_0000, },
+            .{
+                0b1110_0000,
+                0b0010_0000,
+                0b0100_0000,
+                0b0100_0000,
+                0b0100_0000,
+            },
             // '8'
-            .{ 0b1110_0000, 0b1010_0000, 0b1110_0000, 0b1010_0000, 0b1110_0000, },
+            .{
+                0b1110_0000,
+                0b1010_0000,
+                0b1110_0000,
+                0b1010_0000,
+                0b1110_0000,
+            },
             // '9'
-            .{ 0b1110_0000, 0b1010_0000, 0b1110_0000, 0b0010_0000, 0b1110_0000, },
+            .{
+                0b1110_0000,
+                0b1010_0000,
+                0b1110_0000,
+                0b0010_0000,
+                0b1110_0000,
+            },
             // 'A'
-            .{ 0b0110_0000, 0b1010_0000, 0b1110_0000, 0b1010_0000, 0b1010_0000, },
+            .{
+                0b0110_0000,
+                0b1010_0000,
+                0b1110_0000,
+                0b1010_0000,
+                0b1010_0000,
+            },
             // 'B'
-            .{ 0b1100_0000, 0b1010_0000, 0b1100_0000, 0b1010_0000, 0b1100_0000, },
+            .{
+                0b1100_0000,
+                0b1010_0000,
+                0b1100_0000,
+                0b1010_0000,
+                0b1100_0000,
+            },
             // 'C'
-            .{ 0b0110_0000, 0b1000_0000, 0b1000_0000, 0b1000_0000, 0b0110_0000, },
+            .{
+                0b0110_0000,
+                0b1000_0000,
+                0b1000_0000,
+                0b1000_0000,
+                0b0110_0000,
+            },
             // 'D'
-            .{ 0b1100_0000, 0b1010_0000, 0b1010_0000, 0b1010_0000, 0b1100_0000, },
+            .{
+                0b1100_0000,
+                0b1010_0000,
+                0b1010_0000,
+                0b1010_0000,
+                0b1100_0000,
+            },
             // 'E'
-            .{ 0b1110_0000, 0b1000_0000, 0b1100_0000, 0b1000_0000, 0b1110_0000, },
+            .{
+                0b1110_0000,
+                0b1000_0000,
+                0b1100_0000,
+                0b1000_0000,
+                0b1110_0000,
+            },
             // 'F'
-            .{ 0b1110_0000, 0b1000_0000, 0b1100_0000, 0b1000_0000, 0b1000_0000, },
+            .{
+                0b1110_0000,
+                0b1000_0000,
+                0b1100_0000,
+                0b1000_0000,
+                0b1000_0000,
+            },
         };
         test chars_font {
             try testing.expectEqual(0x50, @sizeOf(@TypeOf(chars_font)));
@@ -87,10 +183,10 @@ pub const Chip8Emu = struct {
         // namespace? like a C enum because @intFromEnum is too long
         pub const Offset = struct {
             const unused_block0 = 0x000;
-            const font_block    = 0x050;
+            const font_block = 0x050;
             const unused_block1 = 0x0a0;
-            const program_data  = 0x200;
-            const last          = 0x1000;
+            const program_data = 0x200;
+            const last = 0x1000;
         };
     };
 
@@ -144,10 +240,9 @@ pub const Chip8Emu = struct {
                     // always >0
                     const wrapped_count: u3 = @intCast(wrapped_x - 56);
                     const not_wrapped_row = spr_row >> wrapped_count;
-                    const wrapped_row = spr_row & (@as(u8, 1) << wrapped_count)-1;
-                    const new_row: u64 = @as(u64, not_wrapped_row)
-                        | @as(u64, wrapped_row) << @intCast(64-@as(u8, wrapped_count));
-                    
+                    const wrapped_row = spr_row & (@as(u8, 1) << wrapped_count) - 1;
+                    const new_row: u64 = @as(u64, not_wrapped_row) | @as(u64, wrapped_row) << @intCast(64 - @as(u8, wrapped_count));
+
                     if (vram.raw[cur_y] & new_row != 0) emu.reg.v[0xf] = 1;
 
                     vram.raw[cur_y] ^= new_row;
@@ -269,11 +364,13 @@ pub const Chip8Emu = struct {
         const buf: *[0xe00]u8 = &emu.ram.program_data;
 
         // stream doesn't want to work here so i have to do a manual loop
-        var data_off: usize = 0;
-        while (data_off < buf.len) : (data_off += 1) {
-            buf[data_off] = rom_reader.takeByte() catch break;
-        }
-        return data_off;
+        // var data_off: usize = 0;
+        // while (data_off < buf.len) : (data_off += 1) {
+        //     buf[data_off] = rom_reader.takeByte() catch break;
+        // }
+        // return data_off;
+        _ = try rom_reader.readSliceShort(buf);
+        @panic("hi");
     }
 
     inline fn getRamArray(emu: *Chip8Emu) *[4096]u8 {
@@ -310,7 +407,6 @@ pub const Chip8Emu = struct {
         //     &threads_should_terminate,
         //     io_interface,
         // });
-        
 
         var cycle: u64 = 0;
         while (true) : (cycle += 1) {
@@ -321,7 +417,7 @@ pub const Chip8Emu = struct {
 
             var video_changed = false;
 
-            std.debug.print("${x:0>3}: {x:0>4}\n", .{emu.reg.pc, @as(u16, @bitCast(cur_instr))});
+            //std.debug.print("${x:0>3}: {x:0>4}\n", .{emu.reg.pc, @as(u16, @bitCast(cur_instr))});
 
             switch (cur_instr.category) {
                 // 00xx
@@ -400,7 +496,7 @@ pub const Chip8Emu = struct {
                         0x5 => { // sub with overflow
                             const tuple = @subWithOverflow(emu.reg.v[reg_reg_op.regR], emu.reg.v[reg_reg_op.regY]);
                             emu.reg.v[reg_reg_op.regR] = tuple.@"0";
-                            emu.reg.v[0xf] = 1-tuple.@"1";
+                            emu.reg.v[0xf] = 1 - tuple.@"1";
                         },
                         0x6 => { // shr, save removed bit in vf (no builtin, so we're doing this)
                             const flag_val = emu.reg.v[reg_reg_op.regR] & 0x1;
@@ -410,7 +506,7 @@ pub const Chip8Emu = struct {
                         0x7 => { // rsb -> vr = vy - vr
                             const tuple = @subWithOverflow(emu.reg.v[reg_reg_op.regY], emu.reg.v[reg_reg_op.regR]);
                             emu.reg.v[reg_reg_op.regR] = tuple.@"0";
-                            emu.reg.v[0xf] = 1-tuple.@"1";
+                            emu.reg.v[0xf] = 1 - tuple.@"1";
                         },
                         0xe => {
                             // shl, save removd bit in vf
@@ -435,11 +531,7 @@ pub const Chip8Emu = struct {
                 .sprite => if (last_nybble == 0) @panic("super instruction; not implemented") else {
                     const reg_reg_imm = cur_instr.operands.reg_reg_imm;
                     video_changed = true;
-                    emu.video.draw_xy(
-                        emu,
-                        ram_arr[emu.reg.i..][0..reg_reg_imm.imm],
-                        emu.reg.v[reg_reg_imm.regR],
-                        emu.reg.v[reg_reg_imm.regY]);
+                    emu.video.draw_xy(emu, ram_arr[emu.reg.i..][0..reg_reg_imm.imm], emu.reg.v[reg_reg_imm.regR], emu.reg.v[reg_reg_imm.regY]);
                 },
                 .skpr_skup => switch (nybble_byte.byte) {
                     0x9e => emu.reg.pc += @sizeOf(RomInstruction) *
@@ -454,11 +546,11 @@ pub const Chip8Emu = struct {
                     0x15 => emu.reg.dt = emu.reg.v[nybble_byte.nybble],
                     0x18 => emu.reg.st = emu.reg.v[nybble_byte.nybble],
                     0x1e => emu.reg.i +%= emu.reg.v[nybble_byte.nybble],
-                    0x29 => emu.reg.i = Ram.Offset.font_block + @sizeOf(Ram.CharFont)*@as(u12, emu.reg.v[nybble_byte.nybble]),
+                    0x29 => emu.reg.i = Ram.Offset.font_block + @sizeOf(Ram.CharFont) * @as(u12, emu.reg.v[nybble_byte.nybble]),
                     0x30 => @panic("super instruction; not implemented"),
                     0x33 => bufWriteDecimalByte(ram_arr[emu.reg.i..][0..3], emu.reg.v[nybble_byte.nybble]),
-                    0x55 => @memcpy(ram_arr[emu.reg.i..].ptr, emu.reg.v[0..@as(usize, nybble_byte.nybble)+1]),
-                    0x65 => @memcpy(emu.reg.v[0..@as(usize, nybble_byte.nybble)+1], ram_arr[emu.reg.i..].ptr),
+                    0x55 => @memcpy(ram_arr[emu.reg.i..].ptr, emu.reg.v[0 .. @as(usize, nybble_byte.nybble) + 1]),
+                    0x65 => @memcpy(emu.reg.v[0 .. @as(usize, nybble_byte.nybble) + 1], ram_arr[emu.reg.i..].ptr),
                     else => unreachable,
                 },
             }
@@ -478,7 +570,7 @@ pub const Chip8Emu = struct {
                     io_interface.beep() catch {};
                 }
             }
-            
+
             // if (should_stop_executing.load(.acquire)) {
             //     break;
             // }
@@ -493,13 +585,13 @@ pub const Chip8Emu = struct {
         while (!should_terminate.load(.acquire)) {
             sixty_hz_flag.store(true, .release);
             //std.debug.print("timestamp: {d}; updating timers\n", .{std.time.milliTimestamp()});
-            std.Thread.sleep(std.time.ns_per_s/60);
+            std.Thread.sleep(std.time.ns_per_s / 60);
         }
     }
 
     fn bufWriteDecimalByte(buf: *[3]u8, byte: u8) void {
         buf[2] = byte % 10;
-        buf[1] = (byte/10) % 10;
+        buf[1] = (byte / 10) % 10;
         buf[0] = byte / 100;
     }
 
@@ -651,28 +743,31 @@ pub fn main() !u8 {
 
     var rom_reader = if (filename != null) blk: {
         file = std.fs.cwd().openFile(filename.?, .{ .mode = .read_only }) catch {
-            std.log.err("{s}: failed to open rom file '{s}'", .{args[0], filename.?});
+            std.log.err("{s}: failed to open rom file '{s}'", .{ args[0], filename.? });
             return 2;
         };
         file_reader = file.reader(&rom_read_buf);
         break :blk file_reader.interface;
     } else blk: {
         file = std.fs.cwd().openFile(as8_path.?, .{ .mode = .read_only }) catch {
-            std.log.err("{s}: failed to open .as8 file '{s}'", .{args[0], as8_path.?});
+            std.log.err("{s}: failed to open .as8 file '{s}'", .{ args[0], as8_path.? });
             return 2;
         };
         file_reader = file.reader(&rom_read_buf);
 
+        std.log.info("hi0", .{});
         var as8_state = as8.As8ParserState.init(alloc, &file_reader.interface, &err_writer.interface);
         as8_state.context.filename = as8_path.?;
+        std.log.info("beginning parsing", .{});
         as8_state.parse() catch {
             error_msgs.printErrorHeader(&err_writer.interface, .Warn, "as8 parsing failed\n", .{});
             return 3;
         };
+        std.log.info("parsed", .{});
         if (as8_state.entries.items.len == 0) {
             error_msgs.printErrorHeader(&err_writer.interface, .Warn, "generated zero entries\n", .{});
         } else {
-            error_msgs.printErrorHeader(&err_writer.interface, .Info, "generated {d} entries\n", .{ as8_state.entries.items.len });
+            error_msgs.printErrorHeader(&err_writer.interface, .Info, "generated {d} entries\n", .{as8_state.entries.items.len});
         }
         try err_writer.interface.flush();
 
@@ -686,7 +781,6 @@ pub fn main() !u8 {
 
         break :blk std.Io.Reader.fixed(rom_slice.?);
     };
-
 
     var inr_buf: [512]u8 = undefined;
     var inr_freader = std.fs.File.stdin().reader(&inr_buf);
@@ -704,7 +798,7 @@ pub fn main() !u8 {
     defer chip8_interface.end();
 
     var chip8 = std.mem.zeroInit(Chip8Emu, .{});
-    _ = try chip8.loadRom(&rom_reader);
+    assert(try chip8.loadRom(&rom_reader) > 0);
     _ = try chip8.emulateProgramData(chip8_interface);
 
     try outw.flush();

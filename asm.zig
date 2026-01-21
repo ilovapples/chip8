@@ -167,7 +167,9 @@ pub const As8ParserState = struct {
                 error.EndOfStream => break,
                 else => return e,
             };
+            std.log.info("in asm parsing loop", .{});
         }
+        std.log.info("escaped asm parsing loop", .{});
 
         var is_err = false;
         for (state.uninited_addr_entries.items) |uae| {
@@ -179,10 +181,7 @@ pub const As8ParserState = struct {
             if (state.labels.get(label_name)) |a| {
                 the_entry.addr_instr.addr = .{ .addr = a };
             } else {
-                error_msgs.printHighlightLineError(
-                    state.err_logger, .Error,
-                    "unknown label '{s}'", .{label_name},
-                    uae.context);
+                error_msgs.printHighlightLineError(state.err_logger, .Error, "unknown label '{s}'", .{label_name}, uae.context);
                 is_err = true;
             }
         }
@@ -208,17 +207,19 @@ pub const As8ParserState = struct {
         };
         const original_line_len = state.context.line.len;
 
-        state.context.line = state.context.line[0..std.mem.indexOfScalar(u8, state.context.line, ';') orelse state.context.line.len-1];
+        state.context.line = state.context.line[0 .. std.mem.indexOfScalar(u8, state.context.line, ';') orelse state.context.line.len - 1];
         state.context.line_num += 1;
         // std.debug.print("cur line   = '{s}'\n", .{state.context.line});
 
+        std.log.info("tokenizing line", .{});
         var tokens = std.mem.tokenizeAny(u8, state.context.line, &ascii.whitespace);
         const first_token = tokens.next() orelse {
             state.reader.toss(original_line_len);
             return error.WhitespaceOnlyLine;
         };
-        const is_label = first_token[first_token.len-1] == ':';
-        const first_ident = if (is_label) first_token[0..first_token.len-1] else first_token;
+        const is_label = first_token[first_token.len - 1] == ':';
+        if (is_label) std.log.info("  : found label '{s}'", .{first_token});
+        const first_ident = if (is_label) first_token[0 .. first_token.len - 1] else first_token;
         if (!state.checkStringIsIdent(first_ident)) {
             state.reader.toss(original_line_len);
             return error.InvalidIdent;
@@ -227,21 +228,22 @@ pub const As8ParserState = struct {
 
         const second_token = tokens.peek();
         if (std.mem.eql(u8, first_token, "data") and second_token != null and std.mem.eql(u8, second_token.?, "{")) {
+            std.log.info("  parsing data segment", .{});
             _ = tokens.next();
             state.reader.toss(@intFromPtr(second_token.?.ptr) - @intFromPtr(state.context.line.ptr) + 1);
             state.context.line_num -= 1;
-            try state.entries.append(state.alloc, .{
-                .data_segment = state.readDataSegment(.{
-                    .filename = state.context.filename,
-                    .line_num = state.context.line_num,
-                    .line = state.context.line,
-                    .range_in_line = .fromSlice(u8, state.context.line.ptr, first_token),
-                }) orelse return error.InvalidDataSegment
-            });
+            try state.entries.append(state.alloc, .{ .data_segment = state.readDataSegment(.{
+                .filename = state.context.filename,
+                .line_num = state.context.line_num,
+                .line = state.context.line,
+                .range_in_line = .fromSlice(u8, state.context.line.ptr, first_token),
+            }) orelse return error.InvalidDataSegment });
+            std.log.info("  successfully parsed data segment", .{});
             return;
         }
         defer state.reader.toss(original_line_len);
         if (!is_label) outer: { // parse instruction
+            std.log.info("  parsing mnemonic", .{});
             const instr_info = MnemonicTable.get(first_token) orelse {
                 error_msgs.printHighlightLineError(state.err_logger, .Error, "found unknown mnemonic '{s}'", .{first_token}, .{
                     .filename = state.context.filename,
@@ -339,18 +341,16 @@ pub const As8ParserState = struct {
         const comma_illegal = "a comma separator may not appear after the last mnemonic operand";
 
         const token = tokens.next() orelse return null;
-        if (is_last_operand ^ (token[token.len-1] != ',')) {
+        if (is_last_operand ^ (token[token.len - 1] != ',')) {
             if (is_last_operand) {
-                error_msgs.printHighlightLineError(state.err_logger, .Error,
-                    comma_illegal, .{}, .{
+                error_msgs.printHighlightLineError(state.err_logger, .Error, comma_illegal, .{}, .{
                     .filename = state.context.filename,
                     .line_num = state.context.line_num,
                     .line = state.context.line,
-                    .range_in_line = .{ .index = @intFromPtr(token.ptr) - @intFromPtr(state.context.line.ptr) + token.len-1, .len = 1 },
+                    .range_in_line = .{ .index = @intFromPtr(token.ptr) - @intFromPtr(state.context.line.ptr) + token.len - 1, .len = 1 },
                 });
             } else {
-                error_msgs.printHighlightLineError(state.err_logger, .Error,
-                    comma_required, .{}, .{
+                error_msgs.printHighlightLineError(state.err_logger, .Error, comma_required, .{}, .{
                     .filename = state.context.filename,
                     .line_num = state.context.line_num,
                     .line = state.context.line,
@@ -361,7 +361,7 @@ pub const As8ParserState = struct {
         }
 
         //std.debug.print("got arg slice '{s}'\n", .{state.current_context.line[new_start..new_end]});
-        return if (is_last_operand) token else token[0..token.len-1];
+        return if (is_last_operand) token else token[0 .. token.len - 1];
     }
 
     fn readAddrOperand(state: *As8ParserState, arg: []const u8) ?AddressValue {
@@ -384,7 +384,7 @@ pub const As8ParserState = struct {
                     .line_num = context.line_num,
                     .line = state.alloc.dupe(u8, context.line) catch @panic("OOM"),
                     .range_in_line = context.range_in_line,
-                }}) catch @panic("OOM");
+                } }) catch @panic("OOM");
                 return .{ .label = state.alloc.dupe(u8, arg[1..]) catch @panic("OOM") };
             }
         } else {
@@ -456,14 +456,17 @@ pub const As8ParserState = struct {
         var data: std.ArrayList(u8) = .empty;
         defer data.deinit(state.alloc); // only important if exiting early
         while (true) {
+            std.log.info("  - reading data segment line", .{});
             state.context.line = state.reader.takeDelimiterExclusive('\n') catch {
-                error_msgs.printHighlightLineError(state.err_logger, .Error,
-                    "unterminated data segment block starts here:", .{}, segment_start_context);
+                error_msgs.printHighlightLineError(state.err_logger, .Error, "unterminated data segment block starts here:", .{}, segment_start_context);
                 return null;
             };
-            const line = state.context.line[0..std.mem.indexOfScalar(u8, state.context.line, ';') orelse state.context.line.len];
+            std.log.info("  - DONE", .{});
+            const line = state.context.line[0 .. std.mem.indexOfScalar(u8, state.context.line, ';') orelse state.context.line.len];
             var tokens = std.mem.tokenizeAny(u8, line, &ascii.whitespace);
+            std.log.info("  - beginning token loop. line = '{s}'", .{line});
             while (tokens.next()) |tok| {
+                std.log.info("    * reading data segment token '{s}'", .{tok});
                 // std.debug.print("token in data segment  =  '{s}'\n", .{tok});
                 // std.debug.print("len of token           =  {d}\n", .{tok.len});
                 if (std.mem.eql(u8, tok, "}")) {
@@ -474,8 +477,7 @@ pub const As8ParserState = struct {
                 if (std.fmt.parseInt(u8, tok, 0) catch null) |byte| {
                     data.append(state.alloc, byte) catch @panic("OOM");
                 } else {
-                    error_msgs.printHighlightLineError(state.err_logger, .Error,
-                        "invalid byte literal '{s}'", .{tok}, .{
+                    error_msgs.printHighlightLineError(state.err_logger, .Error, "invalid byte literal '{s}'", .{tok}, .{
                         .filename = state.context.filename,
                         .line_num = state.context.line_num,
                         .line = state.context.line,
@@ -486,6 +488,8 @@ pub const As8ParserState = struct {
             }
 
             state.context.line_num += 1;
+
+            std.log.info("  - on finished reading line {d}", .{state.context.line_num});
         }
 
         return null;
@@ -568,7 +572,6 @@ pub fn main() !u8 {
     const stderr = &stderr_writer.interface;
     defer stderr.flush() catch {};
 
-
     var gpa = std.heap.GeneralPurposeAllocator(.{}).init;
     defer _ = gpa.deinit();
     const alloc = gpa.allocator();
@@ -589,8 +592,8 @@ pub fn main() !u8 {
     }
 
     var file_read_buf: [512]u8 = undefined;
-    var file = std.fs.cwd().openFile(filename.?, .{.mode = .read_only}) catch {
-        std.log.err("{s}: failed to open file '{s}'", .{args[0], filename.?});
+    var file = std.fs.cwd().openFile(filename.?, .{ .mode = .read_only }) catch {
+        std.log.err("{s}: failed to open file '{s}'", .{ args[0], filename.? });
         return 2;
     };
     var file_reader = file.reader(&file_read_buf);
@@ -616,6 +619,6 @@ pub fn main() !u8 {
     }
 
     try stdout.flush();
-    
+
     return 0;
 }

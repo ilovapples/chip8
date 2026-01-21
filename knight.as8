@@ -1,6 +1,6 @@
 	jmp :main
 
-draw_knight: ; params: x=v0, y=v0; uses v0,v1,v2
+draw_knight: ; params: x=v0, y=v0; clobbers v0,v1,v2
 	mvi	:knight_data
 
 	draw	v0, v1, #15
@@ -25,7 +25,7 @@ draw_knight: ; params: x=v0, y=v0; uses v0,v1,v2
 
 knight_data:
 data {
-; top left
+ ; top left
 	0b00001110
 	0b00010001
 	0b00010111
@@ -41,14 +41,14 @@ data {
 	0b10010100
 	0b10010100
 	0b01111011
-; bottom left
+ ; bottom left
 	0b00110001
 	0b00110001
 	0b00110001
 	0b00110001
 	0b00111001
 
-; top right
+ ; top right
 	0b00000000
 	0b00000000
 	0b00000000
@@ -64,7 +64,7 @@ data {
 	0b10111000
 	0b10010000
 	0b10000000
-; bottom right
+ ; bottom right
 	0b10000000
 	0b10000000
 	0b10000000
@@ -94,7 +94,7 @@ loop_start:
 	movr	v0, v4
 	movr	v1, v5
 
-	cls	
+	cls
 
 	jsl	:draw_knight
 	jmp	:loop_start

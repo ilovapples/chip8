@@ -1,0 +1,30 @@
+	mov	v2, #0xff
+	dtst	v2
+	dtld	v0
+label:
+	dtld	v1
+	subr	v1, #12
+	skne	vf, #0
+	dbgrix	v1
+	skne	vf, #0
+	dtst	v2
+	add	v9, #9
+	add	v9, #9
+	add	v9, #9
+	add	v9, #9
+	add	v9, #9
+	add	v9, #9
+	add	v9, #9
+	add	v9, #9
+	add	v9, #9
+	add	v9, #9
+	add	v9, #9
+	add	v9, #9
+	add	v9, #9
+	add	v9, #9
+	add	v9, #9
+	add	v9, #9
+	add	v9, #9
+	jmp	:label
+
+	exit
