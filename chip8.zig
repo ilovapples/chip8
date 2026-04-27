@@ -266,7 +266,7 @@ pub const Chip8Emu = struct {
         operands: Operands,
         category: InstructionCategory,
 
-        // http://devernay.free.fr/hacks/chip8/chip8def.htm
+        /// http://devernay.free.fr/hacks/chip8/chip8def.htm
         pub const InstructionCategory = enum(u4) {
             /// 0xxx: super things, ret, cls
             special = 0x0,

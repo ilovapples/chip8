@@ -7,5 +7,5 @@ fn deref(i: anytype) @typeInfo(@TypeOf(i)).pointer.child {
 }
 
 test {
-    try expect(deref(&8) == 9);
+    try expect(deref(&8) == 8);
 }
