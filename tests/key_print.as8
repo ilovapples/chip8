@@ -1,0 +1,10 @@
+	mov v1, #16
+loop_start:
+	skne v1, #0
+	jmp :loop_end
+	key v1
+	dbgrix v1
+	jmp :loop_start
+loop_end:
+	ret
+

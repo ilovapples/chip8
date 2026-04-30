@@ -1,0 +1,46 @@
+	jmp :main
+
+fibonacci:
+	skne v0, #0
+	jmp :fib_end
+	skne v0, #1
+	jmp :fib_end
+
+	movr v4, v0
+	add v4, #1
+
+	mov v1, #1
+	mov v2, #0
+	mov v3, #2
+
+fib_loop_start:
+	skner v3, v4
+	jmp :fib_end
+
+	movr v0, v1
+	addr v0, v2
+	movr v2, v1
+	movr v1, v0
+	add v3, #1
+	jmp :fib_loop_start
+
+fib_end:
+	ret
+
+read_byte:
+	key v0
+	key v1
+
+	shlr v0
+	shlr v0
+	shlr v0
+	shlr v0
+	orr v0, v1
+
+	ret
+
+main:
+	jsl :read_byte
+	jsl :fibonacci
+	dbgrid v0
+	ret

@@ -4,23 +4,17 @@ pub fn build(b: *std.Build) void {
     const target = b.standardTargetOptions(.{});
     const optimize = b.standardOptimizeOption(.{});
 
-    const lite_argparse_mod = b.createModule(.{
-        .root_source_file = b.path("../../c/arg_parse/arg_parse.zig"),
-        .target = target,
-        .optimize = optimize,
-    });
-
     const chip8_mod = b.createModule(.{
-        .root_source_file = b.path("chip8.zig"),
+        .root_source_file = b.path("chip8_emu.zig"),
         .target = target,
         .optimize = optimize,
     });
     const exe = b.addExecutable(.{
-        .name = "chip8",
+        .name = "chip8_emu",
         .root_module = chip8_mod,
     });
     const chip8_asm_mod = b.createModule(.{
-        .root_source_file = b.path("asm.zig"),
+        .root_source_file = b.path("assembler.zig"),
         .target = target,
         .optimize = optimize,
     });
@@ -29,11 +23,12 @@ pub fn build(b: *std.Build) void {
         .root_module = chip8_asm_mod,
     });
 
-    const mibu_dep = b.dependency("mibu", .{});
-    chip8_mod.addImport("mibu", mibu_dep.module("mibu"));
-    chip8_mod.addImport("lite_argparse", lite_argparse_mod);
-    chip8_asm_mod.addImport("mibu", mibu_dep.module("mibu"));
-    chip8_asm_mod.addImport("lite_argparse", lite_argparse_mod);
+    const mibu_dep = b.dependency("mibu", .{ .optimize = optimize, .target = target }).module("mibu");
+    const jitargs_mod = b.dependency("jitargs", .{ .optimize = optimize, .target = target }).module("jitargs");
+    chip8_mod.addImport("mibu", mibu_dep);
+    chip8_mod.addImport("jitargs", jitargs_mod);
+    chip8_asm_mod.addImport("mibu", mibu_dep);
+    chip8_asm_mod.addImport("jitargs", jitargs_mod);
 
     b.installArtifact(exe);
     b.installArtifact(as8_exe);

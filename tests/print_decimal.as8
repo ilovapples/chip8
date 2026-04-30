@@ -58,4 +58,5 @@ main:
 	mov	v1, #0
 	jsl	:read_print_decimal
 
-	ret
+infinite_loop:
+	jmp :infinite_loop

@@ -1,0 +1,11 @@
+	mvi :the_data
+	ldr v4
+	dbgrc v0
+	dbgrc v1
+	dbgrc v2
+	dbgrc v3
+	dbgrc v4
+
+the_data: data {
+	'h' 'e' 'l' 'l' 'o'
+}

@@ -1,0 +1,16 @@
+	jmp :main
+
+read_byte:
+	key v0
+	key v1
+	shlr v0
+	shlr v0
+	shlr v0
+	shlr v0 ; << 4
+	orr v0, v1 ; v0 |= v1
+	ret
+
+main:
+	jsl :read_byte
+	dbgrix v0
+	ret

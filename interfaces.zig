@@ -1,19 +1,21 @@
 const std = @import("std");
+const Io = std.Io;
 const builtin = @import("builtin");
 const assert = std.debug.assert;
 const posix = std.posix;
 
-const chip8 = @import("chip8.zig");
-const Chip8Emu = chip8.Chip8Emu;
+const chip8_emu = @import("chip8_emu.zig");
+const Chip8Emu = chip8_emu.Chip8Emu;
 
 const mibu = @import("mibu");
 
 const rawmode_term = @import("term.zig");
 
 pub const Chip8TermIO = struct {
-    tty_writer: *std.fs.File.Writer,
-    tty_reader: *std.fs.File.Reader,
-    rawmode_handle: ?mibu.term.RawTerm = null,
+    io: Io,
+    tty_writer: *Io.File.Writer,
+    tty_reader: *Io.File.Reader,
+    rawmode_handle: ?rawmode_term.RawTerm = null,
 
     buffered_keys: std.ArrayList(u8) = .empty,
     alloc: std.mem.Allocator,
@@ -21,8 +23,9 @@ pub const Chip8TermIO = struct {
     pub const OutputError = Chip8Emu.IoInterface.OutputError;
     pub const InputError = Chip8Emu.IoInterface.InputError;
 
-    pub fn init(tty_out: *std.fs.File.Writer, tty_in: *std.fs.File.Reader, alloc: std.mem.Allocator) Chip8TermIO {
+    pub fn init(io: Io, tty_out: *Io.File.Writer, tty_in: *Io.File.Reader, alloc: std.mem.Allocator) Chip8TermIO {
         return .{
+            .io = io,
             .tty_writer = tty_out,
             .tty_reader = tty_in,
             .alloc = alloc,
@@ -51,7 +54,7 @@ pub const Chip8TermIO = struct {
     fn startOutput(ctx: *anyopaque) OutputError!void {
         const tio: *Chip8TermIO = @ptrCast(@alignCast(ctx));
 
-        assert(posix.isatty(tio.tty_writer.file.handle));
+        assert(tio.tty_writer.file.isTty(tio.io) catch unreachable);
         const w: *std.Io.Writer = &tio.tty_writer.interface;
 
         try mibu.term.enterAlternateScreen(w);
@@ -63,9 +66,7 @@ pub const Chip8TermIO = struct {
     fn startInput(ctx: *anyopaque) InputError!void {
         const tio: *Chip8TermIO = @ptrCast(@alignCast(ctx));
 
-        tio.rawmode_handle = rawmode_term.enableRawMode(tio.tty_reader.file.handle)
-            catch |err| if (err != error.NotATerminal) return InputError.OtherError else null;
- 
+        tio.rawmode_handle = rawmode_term.enableRawMode(tio.tty_reader.file.handle) catch |err| if (err != error.NotATerminal) return InputError.OtherError else null;
     }
 
     fn endOutput(ctx: *anyopaque) void {
@@ -90,17 +91,17 @@ pub const Chip8TermIO = struct {
         const w = &tio.tty_writer.interface;
 
         if (check_term_size) {
-            const full_width = if (use_border) 64*2 + 2 else 64*2;
+            const full_width = if (use_border) 64 * 2 + 2 else 64 * 2;
             const full_height = if (use_border) 32 + 2 else 32;
             const term_size = mibu.term.getSize(tio.tty_writer.file.handle) catch return OutputError.OtherError;
             const term_size_is_big_enough = term_size.width >= full_width and term_size.height >= full_height;
             if (!term_size_is_big_enough) {
                 // terminal too small
                 const term_too_small_str = "[ {d}x{d} terminal is too small (need at least 128x32) ]";
-                const half_width = term_size.width/2;
-                const half_str_len = term_too_small_str.len/2;
-                try mibu.cursor.goTo(w, if (half_str_len > half_width) 0 else half_width - half_str_len, term_size.height/2-1);
-                try w.print(term_too_small_str, .{term_size.width, term_size.height});
+                const half_width = term_size.width / 2;
+                const half_str_len = term_too_small_str.len / 2;
+                try mibu.cursor.goTo(w, if (half_str_len > half_width) 0 else half_width - half_str_len, term_size.height / 2 - 1);
+                try w.print(term_too_small_str, .{ term_size.width, term_size.height });
                 try mibu.cursor.goTo(w, 1, 1);
                 try w.flush();
 
@@ -110,13 +111,13 @@ pub const Chip8TermIO = struct {
 
         if (use_border) {
             try w.writeAll("┌");
-            for (0..64*2) |_| try w.writeAll("─");
+            for (0..64 * 2) |_| try w.writeAll("─");
             try w.writeAll("┐\n");
         }
 
         for (buf.*) |row| {
             if (use_border) try w.writeAll("│");
-            var mask: u64 = 1<<63;
+            var mask: u64 = 1 << 63;
             while (mask != 0) : (mask >>= 1) {
                 try w.writeAll(if ((row & mask) == 0) "  " else "██");
             }
@@ -126,7 +127,7 @@ pub const Chip8TermIO = struct {
 
         if (use_border) {
             try w.writeAll("└");
-            for (0..64*2) |_| try w.writeAll("─");
+            for (0..64 * 2) |_| try w.writeAll("─");
             try w.writeAll("┘");
         }
 
@@ -138,13 +139,11 @@ pub const Chip8TermIO = struct {
         const tio: *Chip8TermIO = @ptrCast(@alignCast(ctx));
 
         if (tio.buffered_keys.pop()) |last| {
-            if (Chip8Emu.IoInterface.asciiToChip8Key(last)) |k| return k; 
+            if (Chip8Emu.IoInterface.asciiToChip8Key(last)) |k| return k;
         }
 
         return while (true) {
-            if (Chip8Emu.IoInterface.asciiToChip8Key(tio.tty_reader.interface.takeByte()
-                    catch return InputError.ReadFailed)) |k|
-            {
+            if (Chip8Emu.IoInterface.asciiToChip8Key(tio.tty_reader.interface.takeByte() catch return InputError.ReadFailed)) |k| {
                 break k;
             }
         } else unreachable;
@@ -188,11 +187,15 @@ pub const Chip8TermIO = struct {
 
     // windows <conio.h> _kbhit() func. hopefully will link on windows
     extern fn _kbhit() c_int;
-    fn kbhit(handle: std.fs.File.Handle) !bool {
+    fn kbhit(handle: Io.File.Handle) !bool {
         if (builtin.os.tag == .windows) {
             return _kbhit() != 0;
         }
-        var fds: [1]posix.pollfd = .{ .{ .fd = handle, .events = posix.POLL.IN, .revents = 0, } };
+        var fds: [1]posix.pollfd = .{.{
+            .fd = handle,
+            .events = posix.POLL.IN,
+            .revents = 0,
+        }};
         const timeout_ms: i32 = 50;
         if (try posix.poll(&fds, timeout_ms) == 0) {
             return error.Timeout;
@@ -200,5 +203,3 @@ pub const Chip8TermIO = struct {
         return (fds[0].revents & posix.POLL.IN) != 0;
     }
 };
-
-

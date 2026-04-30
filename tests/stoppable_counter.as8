@@ -1,0 +1,13 @@
+	mov v0, #0
+
+loop_start:
+	skup v0
+	jmp :loop_end
+
+	dbgrix v0
+	add v0, #1
+	jmp :loop_start
+
+loop_end:
+	ret
+

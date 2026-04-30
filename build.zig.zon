@@ -6,6 +6,10 @@
             .url = "git+https://github.com/xyaman/mibu#9c477eb28415cf46e1c52f6b1143d4d0da8d5d36",
             .hash = "mibu-0.0.1-dev-Ddr1riTEAABkaoLGavBv8fCjq85hbYy4HXd6hSgxvCwf",
         },
+        .jitargs = .{
+            .url = "git+https://codeberg.org/ilovapples/jitargs#4786fb62c9971860a3bd2117df6dd55a133862e4",
+            .hash = "jitargs-0.1.0-eR1NOB81AABC7mJKnZbMB3hlMGEUQ3N2sJov_HZtZUk1",
+        },
     },
     .minimum_zig_version = "0.15.1",
     .paths = .{""},

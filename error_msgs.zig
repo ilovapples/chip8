@@ -4,26 +4,26 @@ pub const StringContextInfo = struct {
     filename: []const u8,
     line: []const u8,
     line_num: usize,
-    range_in_line: Range,
+    range: Range,
 };
 
 pub const Range = struct {
     index: usize,
     len: usize,
 
-    pub fn slice(index: usize, len: usize) Range {
+    pub fn from(index: usize, len: usize) Range {
         return .{
             .index = index,
             .len = len,
         };
     }
-    pub fn from(start: usize, end: usize) Range {
+    pub fn between(start: usize, end: usize) Range {
         return .{
             .index = start,
             .len = end - start,
         };
     }
-    pub fn between(from_: usize, to: usize) Range {
+    pub fn betweenInclusive(from_: usize, to: usize) Range {
         return .{
             .index = from_,
             .len = to - from_ + 1,
@@ -35,10 +35,17 @@ pub const Range = struct {
             .len = slice_.len,
         };
     }
+
     pub fn SlicePointerReturnType(comptime PointerType: type) type {
-        var info = @typeInfo(PointerType);
-        info.pointer.size = .slice;
-        return @Type(info);
+        var info = @typeInfo(PointerType).pointer;
+        info.size = .slice;
+        return @Pointer(.slice, .{
+            .@"addrspace" = info.address_space,
+            .@"align" = info.alignment,
+            .@"allowzero" = info.is_allowzero,
+            .@"const" = info.is_const,
+            .@"volatile" = info.is_volatile,
+        }, info.child, info.sentinel());
     }
     pub fn slicePointerBy(range: Range, ptr: anytype) SlicePointerReturnType(@TypeOf(ptr)) {
         return ptr[range.index..][0..range.len];
@@ -71,13 +78,13 @@ pub fn customDataPrintHighlightLineError(writer: *std.Io.Writer, data: *const [4
         file_pos_color_ansi,
         context.filename,
         context.line_num,
-        context.range_in_line.index + 1,
+        context.range.index + 1,
         terminate_ansi,
     }) catch return;
 
     writer.print("{s}{d: >5} | {s}", .{ line_num_color_ansi, context.line_num, terminate_ansi }) catch return;
     var cur_column: usize = 0;
-    for (context.line[0..context.range_in_line.index]) |c| {
+    for (context.line[0..context.range.index]) |c| {
         if (c == '\t') {
             const n_chars = tab_width - cur_column % tab_width;
             for (0..n_chars) |_| {
@@ -93,7 +100,7 @@ pub fn customDataPrintHighlightLineError(writer: *std.Io.Writer, data: *const [4
     const highlight_start_pos = cur_column;
     const log_level_data = data[@intFromEnum(log_level)];
     writer.writeAll(log_level_data.color_ansi) catch return;
-    for (context.line[context.range_in_line.index..][0..context.range_in_line.len]) |c| {
+    for (context.line[context.range.index..][0..context.range.len]) |c| {
         if (c == '\t') {
             const n_chars = tab_width - cur_column % tab_width;
             for (0..n_chars) |_| {
@@ -106,7 +113,7 @@ pub fn customDataPrintHighlightLineError(writer: *std.Io.Writer, data: *const [4
         }
     }
     writer.writeAll(terminate_ansi) catch return;
-    for (context.line[context.range_in_line.index + context.range_in_line.len ..]) |c| {
+    for (context.line[context.range.index + context.range.len ..]) |c| {
         if (c == '\t') {
             const n_chars = tab_width - cur_column % tab_width;
             for (0..n_chars) |_| {
@@ -119,7 +126,7 @@ pub fn customDataPrintHighlightLineError(writer: *std.Io.Writer, data: *const [4
         }
     }
     writer.print("\n{s}      | {s}", .{ line_num_color_ansi, terminate_ansi }) catch return;
-    writer.print("{0s: <[1]}{2s}{3s:~<[4]}{5s}\n\n", .{ "", highlight_start_pos, log_level_data.color_ansi, "^", context.range_in_line.len, terminate_ansi }) catch return;
+    writer.print("{0s: <[1]}{2s}{3s:~<[4]}{5s}\n\n", .{ "", highlight_start_pos, log_level_data.color_ansi, "^", context.range.len, terminate_ansi }) catch return;
 }
 
 pub fn printErrorHeader(writer: *std.Io.Writer, log_level: LogLevel, comptime fmt: []const u8, args: anytype) void {
